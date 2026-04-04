@@ -1,0 +1,25 @@
+name: Deploy ZenTask to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'zentask/**'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Subdirectory to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./zentask
+          publish_branch: gh-pages
