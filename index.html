@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenTask | Premium Productivity</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="auth-mode">
+    <!-- Auth Section -->
+    <div id="auth-container" class="auth-overlay">
+        <div class="auth-card glass">
+            <div class="auth-logo">
+                <i data-lucide="zap" class="logo-icon"></i>
+                <span class="logo-text">ZenTask</span>
+            </div>
+            <h2 id="auth-title">Welcome Back</h2>
+            <p id="auth-subtitle">Focus is a habit. Let's cultivate it.</p>
+            
+            <form id="auth-form" class="auth-form">
+                <div class="input-group">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="auth-email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="auth-password" placeholder="Password" required>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="btn-primary full-width">
+                    <span>Sign In</span>
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <button id="auth-switch-btn">Create Account</button>
+            </div>
+            <p id="auth-error" class="error-text hidden"></p>
+        </div>
+    </div>
+
+    <div class="app-container hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass">
+            <div class="logo">
+                <i data-lucide="zap" class="logo-icon"></i>
+                <span class="logo-text">ZenTask</span>
+            </div>
+            <nav class="nav-links">
+                <button class="nav-item active" data-view="dashboard">
+                    <i data-lucide="layout-dashboard"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="matrix">
+                    <i data-lucide="grid"></i>
+                    <span>Matrix</span>
+                </button>
+                <button class="nav-item" data-view="focus">
+                    <i data-lucide="timer"></i>
+                    <span>Focus</span>
+                </button>
+                <button class="nav-item logout-item" id="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
+                </button>
+            </nav>
+            <div class="stats-mini glass">
+                <div class="stat-item">
+                    <span class="stat-label">Karma</span>
+                    <span class="stat-value" id="karma-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Level</span>
+                    <span class="stat-value" id="level-display">1</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="greeting">
+                    <h1 id="greeting-text">Focus, you've got this.</h1>
+                    <p class="date-display" id="current-date"></p>
+                </div>
+                <div class="user-actions">
+                    <div class="streak-badge glass">
+                        <i data-lucide="flame"></i>
+                        <span id="streak-count">0</span> Days
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view active">
+                <div class="dashboard-grid">
+                    <!-- Task Entry -->
+                    <div class="card add-task-card glass">
+                        <input type="text" id="task-input" placeholder="What's the next big win?">
+                        <div class="task-controls">
+                            <select id="energy-select" class="glass">
+                                <option value="low">Low Energy</option>
+                                <option value="medium">Medium Energy</option>
+                                <option value="high">High Energy</option>
+                            </select>
+                            <button id="add-task-btn" class="btn-primary">
+                                <i data-lucide="plus"></i> Add Task
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Tasks -->
+                    <div class="task-list-section">
+                        <h2>Active Priorities</h2>
+                        <div id="task-list" class="task-list">
+                            <!-- Tasks will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Matrix View -->
+            <section id="matrix-view" class="view">
+                <div class="matrix-container">
+                    <div class="matrix-quadrant glass" id="urgent-important">
+                        <h3>Urgent & Important</h3>
+                        <div class="matrix-tasks"></div>
+                    </div>
+                    <div class="matrix-quadrant glass" id="not-urgent-important">
+                        <h3>Not Urgent & Important</h3>
+                        <div class="matrix-tasks"></div>
+                    </div>
+                    <div class="matrix-quadrant glass" id="urgent-not-important">
+                        <h3>Urgent & Not Important</h3>
+                        <div class="matrix-tasks"></div>
+                    </div>
+                    <div class="matrix-quadrant glass" id="not-urgent-not-important">
+                        <h3>Eliminate</h3>
+                        <div class="matrix-tasks"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Focus View -->
+            <section id="focus-view" class="view">
+                <div class="focus-container glass">
+                    <div id="timer-display">25:00</div>
+                    <div class="timer-controls">
+                        <button id="start-timer" class="btn-timer">Start Focus</button>
+                        <button id="reset-timer" class="btn-secondary">Reset</button>
+                    </div>
+                    <p class="timer-status">Current Session: Deep Work</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Deep Work Overlay -->
+    <div id="deep-work-overlay" class="overlay hidden">
+        <div class="overlay-content">
+            <h1 id="overlay-timer">25:00</h1>
+            <p>Stay focused. Your potential is blooming.</p>
+            <button id="exit-deep-work" class="btn-secondary">Exit Focus</button>
+        </div>
+    </div> <!-- Closing app-container -->
+
+    <script type="module" src="script.js"></script>
+    <script>
+        // Lucide needs to be global for now or imported in module
+        window.addEventListener('load', () => {
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
