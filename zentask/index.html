@@ -12,8 +12,40 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body>
-    <div class="app-container">
+<body class="auth-mode">
+    <!-- Auth Section -->
+    <div id="auth-container" class="auth-overlay">
+        <div class="auth-card glass">
+            <div class="auth-logo">
+                <i data-lucide="zap" class="logo-icon"></i>
+                <span class="logo-text">ZenTask</span>
+            </div>
+            <h2 id="auth-title">Welcome Back</h2>
+            <p id="auth-subtitle">Focus is a habit. Let's cultivate it.</p>
+            
+            <form id="auth-form" class="auth-form">
+                <div class="input-group">
+                    <i data-lucide="mail"></i>
+                    <input type="email" id="auth-email" placeholder="Email Address" required>
+                </div>
+                <div class="input-group">
+                    <i data-lucide="lock"></i>
+                    <input type="password" id="auth-password" placeholder="Password" required>
+                </div>
+                <button type="submit" id="auth-submit-btn" class="btn-primary full-width">
+                    <span>Sign In</span>
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <span id="auth-switch-text">Don't have an account?</span>
+                <button id="auth-switch-btn">Create Account</button>
+            </div>
+            <p id="auth-error" class="error-text hidden"></p>
+        </div>
+    </div>
+
+    <div class="app-container hidden">
         <!-- Sidebar Navigation -->
         <aside class="sidebar glass">
             <div class="logo">
@@ -32,6 +64,10 @@
                 <button class="nav-item" data-view="focus">
                     <i data-lucide="timer"></i>
                     <span>Focus</span>
+                </button>
+                <button class="nav-item logout-item" id="logout-btn">
+                    <i data-lucide="log-out"></i>
+                    <span>Sign Out</span>
                 </button>
             </nav>
             <div class="stats-mini glass">
@@ -133,11 +169,14 @@
             <p>Stay focused. Your potential is blooming.</p>
             <button id="exit-deep-work" class="btn-secondary">Exit Focus</button>
         </div>
-    </div>
+    </div> <!-- Closing app-container -->
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
     <script>
-        lucide.createIcons();
+        // Lucide needs to be global for now or imported in module
+        window.addEventListener('load', () => {
+            if (window.lucide) lucide.createIcons();
+        });
     </script>
 </body>
 </html>
