@@ -33,6 +33,14 @@ const authSwitchBtn = document.getElementById('auth-switch-btn');
 const authSwitchText = document.getElementById('auth-switch-text');
 const authError = document.getElementById('auth-error');
 const logoutBtn = document.getElementById('logout-btn');
+const appLoading = document.getElementById('app-loading');
+const nameGroup = document.getElementById('name-group');
+const authName = document.getElementById('auth-name');
+const togglePassword = document.getElementById('toggle-password');
+const userDisplayName = document.getElementById('user-display-name');
+const greetingTime = document.getElementById('greeting-time');
+const authEmail = document.getElementById('auth-email');
+const authPassword = document.getElementById('auth-password');
 
 const views = document.querySelectorAll('.view');
 const navItems = document.querySelectorAll('.nav-item');
@@ -52,19 +60,54 @@ const exitDeepWorkBtn = document.getElementById('exit-deep-work');
 const greetingText = document.getElementById('greeting-text');
 const currentDateDisplay = document.getElementById('current-date');
 
+let unsubscribeSync = null;
+
 // Initialization
 function init() {
+    // Show loading initially
+    appLoading.classList.remove('hidden');
+
     onAuthStateChanged(auth, (user) => {
         if (user) {
             showAppMode();
             setupSync(user.uid);
         } else {
+            cleanupSync();
+            resetState();
             showAuthMode();
+            // Hide loading if not logged in
+            appLoading.classList.add('hidden');
         }
     });
 
     setupEventListeners();
     updateGreeting();
+}
+
+function setLoading(isLoading) {
+    if (isLoading) {
+        authSubmitBtn.disabled = true;
+        authSubmitBtn.querySelector('span').textContent = isSignUpMode ? "Creating..." : "Signing In...";
+    } else {
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.querySelector('span').textContent = isSignUpMode ? "Sign Up" : "Sign In";
+    }
+}
+
+function resetState() {
+    state = {
+        tasks: [],
+        karma: 0,
+        level: 1,
+        streak: 0,
+        lastCompletedDate: null,
+        timer: {
+            timeLeft: 1500,
+            isRunning: false,
+            isDeepWork: false,
+            interval: null
+        }
+    };
 }
 
 function showAppMode() {
@@ -85,9 +128,10 @@ function showAuthMode() {
 
 // Sync with Firestore
 function setupSync(uid) {
+    cleanupSync();
     userDocRef = doc(db, "users", uid);
 
-    onSnapshot(userDocRef, (snap) => {
+    unsubscribeSync = onSnapshot(userDocRef, (snap) => {
         if (snap.exists()) {
             const data = snap.data();
             state = { 
@@ -98,6 +142,13 @@ function setupSync(uid) {
                 streak: data.streak || 0,
                 lastCompletedDate: data.lastCompletedDate || null
             };
+            
+            if (data.displayName) {
+                userDisplayName.textContent = data.displayName.split(' ')[0];
+            } else {
+                userDisplayName.textContent = "friend";
+            }
+
             renderTasks();
             updateUI();
             if (document.getElementById('matrix-view').classList.contains('active')) {
@@ -106,7 +157,19 @@ function setupSync(uid) {
         } else {
             saveToFirebase();
         }
+        // Hide loading after first sync
+        appLoading.classList.add('hidden');
+    }, (error) => {
+        console.error("Sync error:", error);
+        appLoading.classList.add('hidden');
     });
+}
+
+function cleanupSync() {
+    if (unsubscribeSync) {
+        unsubscribeSync();
+        unsubscribeSync = null;
+    }
 }
 
 function saveToFirebase() {
@@ -132,21 +195,54 @@ function setupEventListeners() {
         authSubmitBtn.querySelector('span').textContent = isSignUpMode ? "Sign Up" : "Sign In";
         authSwitchText.textContent = isSignUpMode ? "Already have an account?" : "Don't have an account?";
         authSwitchBtn.textContent = isSignUpMode ? "Sign In" : "Create Account";
+        
+        if (isSignUpMode) {
+            nameGroup.classList.remove('hidden');
+            authName.required = true;
+        } else {
+            nameGroup.classList.add('hidden');
+            authName.required = false;
+        }
+        
         authError.classList.add('hidden');
+    });
+
+    togglePassword.addEventListener('click', () => {
+        const type = authPassword.type === 'password' ? 'text' : 'password';
+        authPassword.type = type;
+        togglePassword.querySelector('i').setAttribute('data-lucide', type === 'password' ? 'eye' : 'eye-off');
+        lucide.createIcons();
     });
 
     authForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('auth-email').value;
-        const password = document.getElementById('auth-password').value;
+        const email = authEmail.value;
+        const password = authPassword.value;
+        const name = authName.value;
+        
         authError.classList.add('hidden');
+        setLoading(true);
 
         const authAction = isSignUpMode ? createUserWithEmailAndPassword : signInWithEmailAndPassword;
         
         authAction(auth, email, password)
+            .then((userCredential) => {
+                if (isSignUpMode && name) {
+                    // Update display name in Firestore
+                    const user = userCredential.user;
+                    const docRef = doc(db, "users", user.uid);
+                    setDoc(docRef, { displayName: name }, { merge: true });
+                }
+            })
             .catch(err => {
-                authError.textContent = err.message;
+                let msg = err.message;
+                if (err.code === 'auth/invalid-credential') msg = "Invalid email or password.";
+                if (err.code === 'auth/email-already-in-use') msg = "This email is already registered.";
+                if (err.code === 'auth/weak-password') msg = "Password should be at least 6 characters.";
+                
+                authError.textContent = msg;
                 authError.classList.remove('hidden');
+                setLoading(false);
             });
     });
 
@@ -369,11 +465,12 @@ function updateUI() {
 
 function updateGreeting() {
     const hour = new Date().getHours();
-    let msg = "Focus, you've got this.";
-    if (hour < 12) msg = "Good morning. High energy only.";
-    else if (hour < 18) msg = "Good afternoon. Keep the momentum.";
-    else msg = "Good evening. Close out strong.";
-    if (greetingText) greetingText.textContent = msg;
+    let timeMsg = "Focus";
+    if (hour < 12) timeMsg = "Good morning";
+    else if (hour < 18) timeMsg = "Good afternoon";
+    else timeMsg = "Good evening";
+    
+    if (greetingTime) greetingTime.textContent = timeMsg;
     if (currentDateDisplay) currentDateDisplay.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
